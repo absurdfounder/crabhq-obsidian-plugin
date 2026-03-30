@@ -1,0 +1,30 @@
+/* CrabsHQ Memory Sync — Plugin Styles */
+
+.crabhq-conflict-notice {
+  background-color: var(--background-modifier-warning);
+  border-left: 4px solid var(--text-warning);
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+/* Conflict resolution buttons */
+.crabhq-conflict-resolve {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+/* Status bar text */
+.status-bar-item.plugin-crabhq-memory-sync {
+  font-size: var(--font-smallest);
+  cursor: pointer;
+}
+
+/* Settings section spacing */
+.crabhq-settings-section {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--background-modifier-border);
+}

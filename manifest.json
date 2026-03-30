@@ -1,0 +1,9 @@
+{
+  "id": "crabhq-memory-sync",
+  "name": "CrabsHQ Memory Sync",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "Sync your CrabsHQ team memories to Obsidian. Bidirectional sync with conflict detection.",
+  "author": "CrabsHQ",
+  "isDesktopOnly": false
+}

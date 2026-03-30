@@ -3,7 +3,7 @@
   "name": "CrabsHQ Memory Sync",
   "version": "1.0.0",
   "minAppVersion": "1.0.0",
-  "description": "Sync your CrabsHQ team memories to Obsidian. Bidirectional sync with conflict detection.",
+  "description": "Bidirectional sync for CrabsHQ team memories. Pull, push, and resolve conflicts with your AI startup management tool.",
   "author": "CrabsHQ",
   "isDesktopOnly": false
 }

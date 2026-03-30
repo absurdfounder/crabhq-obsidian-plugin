@@ -263,6 +263,14 @@ var CrabsHQApi = class {
       { resolution, resolved_version: resolvedVersion }
     );
   }
+  /** Upload vault files to VPS for knowledge extraction */
+  async uploadVaultFiles(files) {
+    return this.request(
+      "POST",
+      "/api/vault/sync",
+      { files }
+    );
+  }
   /**
    * Generate a new API key (no auth required).
    * bridgeUrl is passed separately since this.key may not exist yet.
@@ -808,6 +816,41 @@ var CrabsHQPlugin = class extends import_obsidian4.Plugin {
           new import_obsidian4.Notice("\u2705 MEMORY.md generated");
         } catch (err) {
           new import_obsidian4.Notice(`\u274C Failed to generate MEMORY.md: ${err.message}`);
+        }
+      }
+    });
+    this.addCommand({
+      id: "dump-vault-to-vps",
+      name: "Upload vault notes to VPS (for memory extraction)",
+      callback: async () => {
+        if (!this.settings.bridgeUrl || !this.settings.apiKey) {
+          new import_obsidian4.Notice("\u26A0\uFE0F Configure Bridge URL and API Key first.");
+          return;
+        }
+        this.setStatus("uploading vault...");
+        try {
+          const api = new CrabsHQApi({ bridgeUrl: this.settings.bridgeUrl, apiKey: this.settings.apiKey });
+          const mdFiles = this.app.vault.getMarkdownFiles();
+          const memoriesFolder = (0, import_obsidian4.normalizePath)(this.settings.memoriesFolder);
+          const filesToUpload = [];
+          for (const file of mdFiles) {
+            if (file.path.startsWith(".obsidian/")) continue;
+            if (file.path.startsWith(memoriesFolder + "/")) continue;
+            const content = await this.app.vault.cachedRead(file);
+            filesToUpload.push({ path: file.path, content, mtime: file.stat.mtime });
+          }
+          let totalUploaded = 0;
+          for (let i = 0; i < filesToUpload.length; i += 50) {
+            const batch = filesToUpload.slice(i, i + 50);
+            const result = await api.uploadVaultFiles(batch);
+            totalUploaded += result.uploaded;
+            this.setStatus(`uploading... ${Math.min(i + 50, filesToUpload.length)}/${filesToUpload.length}`);
+          }
+          new import_obsidian4.Notice(`\u2705 Uploaded ${totalUploaded} vault notes to VPS`);
+          this.setStatus(this.syncEngine.buildStatusMessage());
+        } catch (err) {
+          new import_obsidian4.Notice(`\u274C Vault upload failed: ${err.message}`);
+          this.setStatus(this.syncEngine.buildStatusMessage());
         }
       }
     });

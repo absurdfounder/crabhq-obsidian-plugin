@@ -135,6 +135,17 @@ export class CrabsHQApi {
     );
   }
 
+  /** Upload vault files to VPS for knowledge extraction */
+  async uploadVaultFiles(
+    files: { path: string; content: string; mtime: number }[]
+  ): Promise<{ uploaded: number; skipped: number }> {
+    return this.request<{ uploaded: number; skipped: number }>(
+      "POST",
+      "/api/vault/sync",
+      { files }
+    );
+  }
+
   /**
    * Generate a new API key (no auth required).
    * bridgeUrl is passed separately since this.key may not exist yet.

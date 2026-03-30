@@ -110,6 +110,44 @@ export default class CrabsHQPlugin extends Plugin {
       },
     });
 
+    this.addCommand({
+      id: "dump-vault-to-vps",
+      name: "Upload vault notes to VPS (for memory extraction)",
+      callback: async () => {
+        if (!this.settings.bridgeUrl || !this.settings.apiKey) {
+          new Notice("⚠️ Configure Bridge URL and API Key first.");
+          return;
+        }
+        this.setStatus("uploading vault...");
+        try {
+          const api = new CrabsHQApi({ bridgeUrl: this.settings.bridgeUrl, apiKey: this.settings.apiKey });
+          const mdFiles = this.app.vault.getMarkdownFiles();
+          // Skip plugin config folders and the memories sync folder
+          const memoriesFolder = normalizePath(this.settings.memoriesFolder);
+          const filesToUpload: { path: string; content: string; mtime: number }[] = [];
+          for (const file of mdFiles) {
+            if (file.path.startsWith('.obsidian/')) continue;
+            if (file.path.startsWith(memoriesFolder + '/')) continue;
+            const content = await this.app.vault.cachedRead(file);
+            filesToUpload.push({ path: file.path, content, mtime: file.stat.mtime });
+          }
+          // Upload in batches of 50
+          let totalUploaded = 0;
+          for (let i = 0; i < filesToUpload.length; i += 50) {
+            const batch = filesToUpload.slice(i, i + 50);
+            const result = await api.uploadVaultFiles(batch);
+            totalUploaded += result.uploaded;
+            this.setStatus(`uploading... ${Math.min(i + 50, filesToUpload.length)}/${filesToUpload.length}`);
+          }
+          new Notice(`✅ Uploaded ${totalUploaded} vault notes to VPS`);
+          this.setStatus(this.syncEngine.buildStatusMessage());
+        } catch (err) {
+          new Notice(`❌ Vault upload failed: ${(err as Error).message}`);
+          this.setStatus(this.syncEngine.buildStatusMessage());
+        }
+      },
+    });
+
     // Settings tab
     this.addSettingTab(new CrabsHQSettingTab(this.app, this));
 
